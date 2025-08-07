@@ -1,0 +1,915 @@
+1. What is Active Directory?
+Answer:
+Active Directory (AD) is a directory service developed by Microsoft for Windows domain networks. It is included in most Windows Server operating systems and serves as a centralized and standardized system for network management. AD stores information about objects (users, computers, printers, etc.) in a hierarchical structure, enabling administrators to manage permissions, authentication, and access control for all objects within a domain.
+
+AD allows:
+
+Centralized user and resource management
+
+Single Sign-On (SSO) capabilities
+
+Scalability across multiple sites/domains
+
+Integration with other Microsoft services and apps
+
+2. What are the main components of Active Directory?
+Answer:
+The core components of Active Directory are:
+
+Active Directory Domain Services (AD DS): The primary service that stores directory data and manages communication between users and domains. This includes login authentication and directory searches.
+
+Active Directory Lightweight Directory Services (AD LDS): A lightweight version of AD DS that provides directory services without requiring domain controllers or full AD integration.
+
+Active Directory Certificate Services (AD CS): Provides services for creating, managing, and validating digital certificates used in public key infrastructures (PKI).
+
+Active Directory Federation Services (AD FS): Allows for single sign-on (SSO) across different organizational boundaries by federating identities.
+
+Active Directory Rights Management Services (AD RMS): Protects sensitive information by enforcing information rights policies.
+
+3. What is the difference between a domain, a tree, and a forest in Active Directory?
+Answer:
+
+Domain:
+The basic unit in AD, a domain is a logical grouping of objects (users, groups, devices). Domains share a common database, security policies, and trust relationships.
+
+Tree:
+A tree is a collection of domains in a contiguous namespace. The domains are connected in a parent-child relationship and automatically share a two-way transitive trust. For example, corp.company.com and sales.corp.company.com form a tree.
+
+Forest:
+A forest is the top-level container that holds one or more trees. Trees in a forest do not need to share a contiguous namespace but do share a common schema, global catalog, and configuration. Trusts are established between trees.
+
+Example:
+
+Forest: company.com
+
+Tree 1: corp.company.com, sales.corp.company.com
+
+Tree 2: support.company.org
+
+4. What is a Domain Controller (DC)?
+Answer:
+A Domain Controller is a Windows Server computer that authenticates and authorizes all users and computers in a domain. It stores a copy of the AD database (NTDS.dit), enforces group policies, and processes logins, password changes, and directory searches.
+
+There can be multiple DCs in a domain to provide:
+
+Redundancy (if one fails)
+
+Load balancing
+
+Replication of changes between DCs
+
+DCs also perform FSMO roles and maintain the Global Catalog.
+
+5. What is the Global Catalog (GC)?
+Answer:
+The Global Catalog is a distributed data repository that contains a partial replica of every object in the forest. It allows users and applications to search across all domains in the forest without needing to contact each domain individually.
+
+Key points:
+
+Hosted on Domain Controllers designated as Global Catalog Servers
+
+Stores a subset of each object's attributes (not all)
+
+Essential for functions like user logon and universal group membership resolution in multi-domain forests
+
+For example, if a user from domainA.com logs on in domainB.com, the GC helps validate group memberships quickly across domains.
+
+6. What are Organizational Units (OUs), and how are they different from containers?
+Answer:
+An Organizational Unit (OU) is a logical container within a domain used to organize objects such as users, groups, and computers. It provides a way to apply Group Policies and delegate administrative control in a structured and manageable way.
+
+Key differences between OUs and containers:
+
+Feature	Organizational Unit (OU)	Container
+Customizable	Yes (you can create and manage)	No (built-in; can't be modified easily)
+Group Policy application	Yes	No
+Delegation of control	Supported	Not supported
+Examples	OU=Sales, OU=HR	CN=Users, CN=Computers
+
+Use Case:
+If you want to assign a GPO that only affects the Sales department, placing all Sales users in a "Sales OU" allows targeted policy application.
+
+7. Can you explain what a user object is in AD?
+Answer:
+A user object in Active Directory represents an individual user account. It contains attributes such as:
+
+sAMAccountName: The username used to log in
+
+userPrincipalName (UPN): Typically in the form user@domain.com
+
+givenName, sn: First and last name
+
+mail: Email address
+
+Group memberships
+
+Login script
+
+Profile path
+
+User objects are essential for:
+
+Authentication and authorization
+
+Applying Group Policies
+
+Managing resource access like files, printers, and applications
+
+8. What is the purpose of a computer object in Active Directory?
+Answer:
+A computer object in AD represents a machine (workstation or server) that is joined to the domain. When a computer joins the domain, a unique object is created in AD.
+
+Key roles:
+
+Enables machine-level authentication using Kerberos
+
+Allows the machine to receive Group Policies
+
+Manages permissions and access control based on computer accounts
+
+Helps track and audit which computers are connected to the domain
+
+Note:
+Computer objects are typically placed in the Computers container, but they can be moved to OUs for better policy management.
+
+9. What are Group Types and Group Scopes in AD?
+Answer:
+Groups in AD are used to manage permissions and access control.
+
+Group Types:
+Security groups: Used to assign permissions to resources (e.g., file shares, printers)
+
+Distribution groups: Used only for email distribution; cannot be used for security permissions
+
+Group Scopes:
+Scope	Can Contain Members From	Can Be Used in ACLs In
+Domain Local	Any domain in the forest	Same domain only
+Global	Same domain only	Any domain
+Universal	Any domain in the forest	Any domain
+
+Example Use Case:
+
+Use a Global Group for departmental users (e.g., HR Users)
+
+Add that Global Group to a Domain Local Group that has access to resources
+
+Use Universal Groups for assigning permissions across domains in a forest
+
+10. How do you delegate control in Active Directory?
+Answer:
+Delegation of control is the process of granting specific administrative permissions to users or groups on an OU or object.
+
+Steps:
+
+Open Active Directory Users and Computers (ADUC)
+
+Right-click the OU where you want to delegate control
+
+Choose “Delegate Control...”
+
+Use the Delegation of Control Wizard to:
+
+Select the user/group
+
+Choose predefined tasks (e.g., reset passwords, create/delete users)
+
+Assign custom permissions if needed
+
+Benefits:
+
+Enables role-based access control (RBAC)
+
+Avoids giving full domain admin rights
+
+Improves security and accountability
+
+11. What services does AD DS provide?
+Answer:
+Active Directory Domain Services (AD DS) is the core component of Active Directory. It provides the following key services:
+
+Authentication: Verifies user and computer identities during login.
+
+Authorization: Controls access to resources based on permissions.
+
+Directory Services: Provides a searchable, hierarchical structure of all AD objects (users, computers, printers, groups, etc.).
+
+Policy Enforcement: Applies Group Policy Objects (GPOs) to manage user and computer configurations.
+
+Replication: Synchronizes changes across all Domain Controllers.
+
+Scalability: Supports multi-domain and multi-site environments.
+
+Trust Management: Enables resource access across trusted domains/forests.
+
+12. How does AD replication work?
+Answer:
+Active Directory uses multi-master replication, meaning updates can be made on any writable Domain Controller (DC), and those changes are replicated to other DCs.
+
+Key components:
+
+Replication Topology: Managed by the Knowledge Consistency Checker (KCC), which automatically creates and adjusts replication paths.
+
+Intra-site replication: Uses RPC over IP and occurs frequently (every 15 seconds by default).
+
+Inter-site replication: Occurs over scheduled intervals and may use compression to reduce bandwidth usage.
+
+Conflict resolution:
+AD uses update sequence numbers (USNs) and timestamps to resolve conflicting changes, giving priority to the most recent one.
+
+Tools to monitor replication:
+
+repadmin
+
+Event Viewer
+
+Active Directory Replication Status Tool
+
+13. What are FSMO (Flexible Single Master Operations) roles? Can you name and explain each one?
+Answer:
+FSMO roles are specialized tasks handled by specific Domain Controllers to ensure consistency in the AD environment. There are five FSMO roles, divided into two categories:
+
+Forest-wide roles (1 per forest):
+Schema Master: Controls changes to the AD schema (e.g., adding new object types).
+
+Domain Naming Master: Manages the addition or removal of domains in the forest.
+
+Domain-wide roles (1 per domain):
+RID Master (Relative ID): Allocates RID pools to other DCs for creating unique security identifiers (SIDs).
+
+PDC Emulator (Primary Domain Controller):
+
+Emulates legacy PDC for backward compatibility
+
+Manages password changes and account lockouts
+
+Time synchronization authority
+
+Infrastructure Master: Updates references to objects in other domains (important in multi-domain forests).
+
+14. How do you transfer or seize FSMO roles?
+Answer:
+
+To transfer FSMO roles (graceful):
+Use Active Directory GUI tools:
+
+Schema Master: regsvr32 schmmgmt.dll > Schema snap-in
+
+Domain Naming Master: Active Directory Domains and Trusts
+
+RID, PDC, Infrastructure: Active Directory Users and Computers
+
+Or use PowerShell:
+
+powershell
+Copy
+Edit
+Move-ADDirectoryServerOperationMasterRole -Identity "DC1" -OperationMasterRole PDCEmulator
+To seize FSMO roles (forceful – only if original DC is unrecoverable):
+Use ntdsutil:
+
+shell
+Copy
+Edit
+ntdsutil > roles > connections > connect to server <DCName> > seize <role>
+Warning:
+Seizing FSMO roles can cause issues if the old role holder comes back online, so only do this if the DC is permanently offline.
+
+15. How can you monitor or troubleshoot AD replication?
+Answer:
+Troubleshooting replication is critical to ensure consistency across DCs. Use these tools and steps:
+
+Tools:
+repadmin /replsummary: Provides a quick health check
+
+repadmin /showrepl: Shows replication partners and last attempt status
+
+dcdiag: Diagnoses overall DC health
+
+Event Viewer: Check logs under Directory Service and File Replication Service
+
+Active Directory Sites and Services: Visualize replication topology
+
+AD Replication Status Tool: GUI tool from Microsoft for monitoring replication
+
+Common issues to check:
+DNS misconfiguration
+
+Time synchronization issues
+
+Network connectivity/firewall restrictions
+
+SYSVOL replication failures (especially on older DCs using FRS instead of DFS-R)
+
+Lingering objects (use repadmin /removelingeringobjects to fix)
+
+Section 4: Group Policy
+16. What is Group Policy, and how does it relate to Active Directory?
+Answer:
+Group Policy is a feature in Active Directory that allows administrators to define and control user and computer configurations across a network. These configurations are defined in Group Policy Objects (GPOs), which can be linked to:
+
+Sites
+
+Domains
+
+Organizational Units (OUs)
+
+Group Policy is centralized, meaning administrators can enforce settings such as:
+
+Password policies
+
+Software deployment
+
+Desktop restrictions
+
+Security settings
+
+Login/logoff scripts
+
+It works by applying the settings from linked GPOs at login or computer startup.
+
+17. What is the difference between a GPO and an OU?
+Answer:
+
+Feature	GPO (Group Policy Object)	OU (Organizational Unit)
+Function	A container for policy settings	A container for AD objects (users, computers)
+Purpose	Defines system and user behavior	Organizes objects logically within a domain
+GPO Linkability	Can be linked to multiple OUs/domains	GPOs are linked to OUs
+Delegation	Cannot delegate GPO control directly	Delegation of control is done via OUs
+
+Example:
+
+You create a GPO to disable USB ports.
+
+You link that GPO to the "Finance OU" so all finance users/computers inherit it.
+
+18. How do you troubleshoot a GPO not applying to users or computers?
+Answer:
+
+Common troubleshooting steps:
+
+Run gpresult /h report.html or rsop.msc:
+
+Shows what policies applied and where conflicts may exist.
+
+Check GPO Linkage:
+
+Ensure the GPO is linked to the correct OU or domain.
+
+Check Scope & Security Filtering:
+
+Make sure the user/computer is within the GPO’s scope and has Read and Apply Group Policy permissions.
+
+WMI Filtering:
+
+If used, ensure the filter applies correctly to the target system.
+
+Check Group Memberships:
+
+If GPO is filtered by group membership, verify inclusion.
+
+Ensure AD Replication is Working:
+
+GPOs might not apply if the policy changes haven’t replicated.
+
+Verify the system is in the correct OU:
+
+GPOs only apply to objects within the linked container.
+
+Look at the Event Viewer logs:
+
+Check under System and Group Policy Operational logs.
+
+Check DNS and network issues:
+
+Group Policy requires the client to locate the DC via DNS.
+
+Try gpupdate /force:
+
+Forces re-application of policies.
+
+19. What is Group Policy inheritance, and how does blocking inheritance or enforcing policies work?
+Answer:
+
+Group Policy Inheritance defines the hierarchical application of GPOs from top to bottom:
+
+Site level GPOs
+
+Domain level GPOs
+
+OU level GPOs (and nested OUs)
+
+Rules:
+
+Policies are applied in order: Local → Site → Domain → OU
+
+Child OUs inherit GPOs from parent containers unless blocked.
+
+Blocking Inheritance:
+Used to prevent parent policies from applying to a specific OU.
+
+Set at the OU level via GPMC.
+
+Useful for exceptions, but should be used carefully.
+
+Enforcing (aka “No override”):
+Prevents GPO settings from being overridden by lower-level GPOs.
+
+Set on the GPO itself.
+
+Ensures critical policies (like security baselines) are always applied.
+
+Example:
+
+A domain GPO enforces password policies.
+
+The HR OU blocks inheritance.
+
+If the password policy is enforced at the domain level, it still applies to HR due to enforcement.
+
+20. What tools do you use to manage and troubleshoot GPOs?
+Answer:
+
+Graphical Tools:
+Group Policy Management Console (GPMC):
+
+Central tool to create, edit, link, and manage GPOs
+
+Resultant Set of Policy (RSoP.msc):
+
+Visual representation of effective policy for a user/computer
+
+Event Viewer:
+
+Logs GPO application events under System and Group Policy logs
+
+Group Policy Editor (gpedit.msc):
+
+Edits local GPOs on standalone machines
+
+Command-Line Tools:
+gpresult /r or /h: Shows resulting policy applied
+
+gpupdate /force: Forces reapplication of all GPOs
+
+dcdiag: Checks domain controller health
+
+gpotool.exe: Verifies GPO consistency between SYSVOL and AD (older tool)
+
+PowerShell Cmdlets:
+Get-GPO, Get-GPResultantSetOfPolicy, New-GPO, Set-GPLink, etc.
+
+21. How does Kerberos authentication work in Active Directory?
+Answer:
+Kerberos is the default authentication protocol used in Active Directory. It provides mutual authentication between the client and server using tickets, making it more secure than NTLM.
+
+Basic Workflow:
+Logon Request:
+The user logs in with a username and password. The client contacts the Key Distribution Center (KDC), which is hosted on the Domain Controller.
+
+TGT (Ticket Granting Ticket):
+The KDC verifies the credentials and issues a TGT, encrypted with the user's password hash.
+
+Service Ticket Request:
+When the user accesses a resource (e.g., a file server), the client presents the TGT to the Ticket Granting Service (TGS) (also part of the KDC) and requests a service ticket.
+
+Access Granted:
+The client presents the service ticket to the target server, which then grants access if the ticket is valid.
+
+Key Concepts:
+Uses symmetric key cryptography
+
+Requires synchronized time across systems (within 5 minutes by default)
+
+More secure than NTLM because credentials are never sent over the network
+
+22. What is NTLM, and how is it different from Kerberos?
+Answer:
+
+NTLM (NT LAN Manager) is an older authentication protocol still supported for backward compatibility. It uses a challenge-response mechanism instead of tickets.
+
+NTLM Workflow:
+The client sends the username.
+
+The server responds with a challenge (random number).
+
+The client encrypts the challenge using the user's password hash and sends it back.
+
+The server verifies it by comparing it with stored values.
+
+Key Differences:
+Feature	NTLM	Kerberos
+Protocol Type	Challenge-response	Ticket-based
+Password Exposure	Password hash sent over network	No password hash sent
+Mutual Auth	No	Yes
+Performance	Slower	Faster (uses tickets)
+Default In AD	Legacy	Default in AD (since Windows 2000)
+
+Security Risk:
+NTLM is susceptible to pass-the-hash attacks and should be disabled when possible in favor of Kerberos.
+
+23. What is LDAP, and how is it used in Active Directory?
+Answer:
+LDAP (Lightweight Directory Access Protocol) is an open protocol used to access and manage directory information. In AD, LDAP is the primary protocol for querying and modifying the directory service.
+
+LDAP in AD:
+Used by clients and applications to search for objects (users, computers, groups).
+
+Runs on port 389 (LDAP) and 636 (LDAPS – secure).
+
+Used for authentication, address book lookups, SSO, etc.
+
+Example LDAP Query:
+ldap
+Copy
+Edit
+(&(objectCategory=person)(objectClass=user)(sAMAccountName=jdoe))
+Common Usage:
+Email clients querying the global address list (GAL)
+
+Applications connecting to AD for authentication
+
+Directory synchronization tools
+
+24. How do you handle account lockouts and password policies in AD?
+Answer:
+
+Account Lockouts:
+Account lockouts happen when a user exceeds the maximum allowed login attempts (e.g., 5 wrong passwords).
+
+Managed through Group Policy under:
+Computer Configuration > Policies > Windows Settings > Security Settings > Account Policies > Account Lockout Policy
+
+Important settings:
+
+Account lockout threshold
+
+Account lockout duration
+
+Reset account lockout counter after
+
+Password Policies:
+Configured via Group Policy:
+
+Minimum password length
+
+Password complexity requirements
+
+Maximum and minimum password age
+
+Password history
+
+Troubleshooting Lockouts:
+Use tools like:
+
+eventvwr.msc (Security logs on DCs)
+
+lockoutstatus.exe from Microsoft
+
+Netlogon logs to trace which system is causing the lockout
+
+Look for:
+
+Mapped drives using old credentials
+
+Scheduled tasks or services using old passwords
+
+Mobile device sync (e.g., Exchange)
+
+25. What steps do you take to secure an Active Directory environment?
+Answer:
+
+Securing Active Directory is critical, as it controls access to nearly every IT resource. Best practices include:
+
+Account and Authentication Security:
+Enforce strong password policies
+
+Implement Multi-Factor Authentication (MFA)
+
+Use Group Managed Service Accounts (gMSAs) for services
+
+Administrative Tiering:
+Separate admin accounts from regular user accounts
+
+Use tiered administration model (Tier 0, 1, 2)
+
+Principle of Least Privilege:
+Assign only the permissions users need
+
+Audit group memberships regularly (especially Domain Admins)
+
+Monitoring and Auditing:
+Enable advanced auditing
+
+Use SIEM tools to track suspicious behavior
+
+Monitor changes to sensitive groups and GPOs
+
+Secure Communication and Protocols:
+Disable NTLM where possible
+
+Require LDAPS
+
+Ensure Kerberos encryption types are enabled
+
+Patch Management:
+Keep Domain Controllers updated with latest security patches
+
+Monitor for known vulnerabilities (e.g., ZeroLogon, PrintNightmare)
+
+Backup and Recovery:
+Perform regular System State backups
+
+Test authoritative and non-authoritative restores
+
+26. How do you create an Active Directory user using PowerShell?
+Answer:
+
+To create a new user in Active Directory using PowerShell, use the New-ADUser cmdlet. Here's a detailed example:
+
+powershell
+Copy
+Edit
+New-ADUser `
+  -Name "John Doe" `
+  -GivenName "John" `
+  -Surname "Doe" `
+  -SamAccountName "jdoe" `
+  -UserPrincipalName "jdoe@domain.com" `
+  -Path "OU=Sales,DC=domain,DC=com" `
+  -AccountPassword (ConvertTo-SecureString "P@ssw0rd1" -AsPlainText -Force) `
+  -Enabled $true `
+  -ChangePasswordAtLogon $true
+Explanation:
+
+-SamAccountName: Login name used by older systems (pre-Windows 2000)
+
+-UserPrincipalName: Format for login in modern systems (user@domain)
+
+-Path: Distinguished Name (DN) of the OU
+
+-ConvertTo-SecureString: Ensures password is securely stored
+
+This creates and enables the user account and forces the user to change the password on the first login.
+
+27. How do you reset passwords for multiple users using a script?
+Answer:
+
+You can use a CSV file to reset passwords in bulk. For example, if you have a file called users.csv with a header Username, here’s a script:
+
+powershell
+Copy
+Edit
+Import-Csv "C:\users.csv" | ForEach-Object {
+    $SecurePass = ConvertTo-SecureString "NewPassword123!" -AsPlainText -Force
+    Set-ADAccountPassword -Identity $_.Username -NewPassword $SecurePass -Reset
+    Enable-ADAccount -Identity $_.Username
+}
+Steps:
+
+Create a CSV file:
+
+nginx
+Copy
+Edit
+Username
+jdoe
+asmith
+bjohnson
+The script loops through the list and:
+
+Resets the password
+
+Ensures the account is enabled
+
+Important: Use strong passwords and protect your scripts. Never hardcode passwords in production.
+
+28. How do you export a list of users from a specific OU using PowerShell?
+Answer:
+
+powershell
+Copy
+Edit
+Get-ADUser -SearchBase "OU=HR,DC=domain,DC=com" -Filter * `
+| Select-Object Name, SamAccountName, Enabled, Department `
+| Export-Csv "C:\HRUsers.csv" -NoTypeInformation
+Explanation:
+
+-SearchBase: Defines the OU to search
+
+-Filter *: Gets all users
+
+Select-Object: Chooses which attributes to export
+
+Export-Csv: Outputs the result into a CSV file
+
+This is very useful for audits, reporting, or migration projects.
+
+29. How do you use PowerShell for Active Directory auditing and reporting?
+Answer:
+
+PowerShell can generate custom reports for nearly every AD object. Some useful examples:
+
+List all disabled user accounts:
+powershell
+Copy
+Edit
+Get-ADUser -Filter {Enabled -eq $false} -Properties LastLogonDate `
+| Select Name, SamAccountName, LastLogonDate
+List users who haven’t logged in for 90+ days:
+powershell
+Copy
+Edit
+$DateLimit = (Get-Date).AddDays(-90)
+Get-ADUser -Filter * -Properties LastLogonDate `
+| Where-Object { $_.LastLogonDate -lt $DateLimit -and $_.Enabled -eq $true } `
+| Select Name, SamAccountName, LastLogonDate
+Export group membership:
+powershell
+Copy
+Edit
+Get-ADGroupMember -Identity "HR Group" `
+| Select Name, SamAccountName `
+| Export-Csv "C:\HRGroupMembers.csv" -NoTypeInformation
+Check for users with "Password Never Expires":
+powershell
+Copy
+Edit
+Get-ADUser -Filter * -Properties PasswordNeverExpires `
+| Where-Object { $_.PasswordNeverExpires -eq $true } `
+| Select Name, SamAccountName
+30. How do you schedule and automate AD tasks with PowerShell?
+Answer:
+
+You can create scripts and schedule them using Task Scheduler:
+
+Steps:
+Write your PowerShell script and save as .ps1
+
+Open Task Scheduler
+
+Create a new task → set trigger (e.g., daily at 8 AM)
+
+Action:
+
+Program: powershell.exe
+
+Arguments: -ExecutionPolicy Bypass -File "C:\Scripts\MyADTask.ps1"
+
+Run as a service account with proper privileges
+
+Tip: Log output to a file for monitoring:
+
+powershell
+Copy
+Edit
+"Task started at $(Get-Date)" | Out-File "C:\Logs\TaskLog.txt" -Append
+
+
+31. What is the SYSVOL folder, and why is it important?
+Answer:
+The SYSVOL (System Volume) folder is a shared directory on Domain Controllers that stores:
+
+Group Policy templates (GPTs)
+
+Logon/logoff scripts
+
+Startup/shutdown scripts
+
+Public domain-wide files needed during authentication
+
+SYSVOL is automatically replicated between DCs using either:
+
+FRS (File Replication Service) – deprecated
+
+DFS-R (Distributed File System Replication) – modern and recommended
+
+Key Points:
+Location: C:\Windows\SYSVOL
+
+Must be consistent across DCs for GPOs to apply properly
+
+Issues with SYSVOL replication often result in GPO application failures
+
+Best practice: Ensure SYSVOL is using DFS-R and replication is monitored via Event Viewer or dfsrdiag.
+
+32. How do you troubleshoot AD login issues?
+Answer:
+
+Common causes of login failures:
+Incorrect credentials
+
+Account locked or disabled
+
+Time synchronization issues (Kerberos requires <5-minute drift)
+
+Network/DNS problems
+
+Trust relationship failures
+
+Group Policy or profile misconfiguration
+
+Troubleshooting steps:
+Review Event Viewer logs on the client and DC
+
+Security (ID 4625 – failed login)
+
+System (ID 5719 – trust issues)
+
+Run whoami /groups to check group memberships.
+
+Test DNS resolution of the domain: nslookup domain.com
+
+Check time sync: Run w32tm /query /status
+
+Check account status:
+
+powershell
+Copy
+Edit
+Get-ADUser jdoe -Properties LockedOut, Enabled
+Use nltest or dcdiag to test DC connectivity.
+
+33. What is the difference between authoritative and non-authoritative restore?
+Answer:
+
+These are methods of restoring Active Directory from backup:
+
+Non-authoritative restore:
+Restores the domain controller to a previous state.
+
+After reboot, replication updates the DC with the latest data from other DCs.
+
+Used when a DC is corrupted but other DCs have valid data.
+
+Authoritative restore:
+Used when you want the restored object(s) to overwrite other DCs.
+
+Typically used for recovering deleted OUs, users, or GPOs.
+
+You must mark specific objects as authoritative using ntdsutil.
+
+Steps:
+
+Boot into Directory Services Restore Mode (DSRM)
+
+Restore from backup
+
+Use ntdsutil to mark an object authoritative
+
+Reboot and allow replication
+
+Important: Use authoritative restores only when necessary, as they override existing data.
+
+34. How do you recover a deleted AD object?
+Answer:
+
+If AD Recycle Bin is enabled:
+You can recover deleted objects easily using PowerShell:
+
+powershell
+Copy
+Edit
+Get-ADObject -Filter 'isDeleted -eq $true' -IncludeDeletedObjects `
+| Restore-ADObject
+If AD Recycle Bin is not enabled:
+You must use:
+
+Authoritative restore from backup
+
+Or third-party tools (Quest Recovery Manager, etc.)
+
+To enable Recycle Bin:
+
+powershell
+Copy
+Edit
+Enable-ADOptionalFeature -Identity 'Recycle Bin Feature' `
+  -Scope ForestOrConfigurationSet `
+  -Target "domain.com"
+35. What is Active Directory Sites and Services used for?
+Answer:
+
+Active Directory Sites and Services is a Microsoft Management Console (MMC) tool used to manage:
+
+Physical network structure in AD
+
+Site definitions (usually align with physical locations)
+
+Subnet-to-site mappings
+
+Replication topology and schedules
+
+Bridgehead servers
+
+Key Functions:
+Ensures efficient replication (site links reduce WAN usage)
+
+Allows administrators to assign DCs to specific sites
+
+Configures replication intervals and costs
+
+Used to troubleshoot slow logons or DC selection issues
+
+Example:
+
+A user in New York logs into a DC in London. This could indicate a site/subnet misconfiguration.
